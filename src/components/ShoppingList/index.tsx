@@ -25,6 +25,25 @@ export function ShoppingList() {
     return () => subscribe();
   }, []);
 
+  // Filtrando consultas
+  // useEffect(() => {
+  //   const subscribe = firestore()
+  //     .collection("products")
+  //     .where("quantity", "==", 1)
+  //     .onSnapshot((querySnapshot) => {
+  //       const data = querySnapshot.docs.map((doc) => {
+  //         return {
+  //           id: doc.id,
+  //           ...doc.data(),
+  //         };
+  //       }) as ProductProps[];
+
+  //       setProducts(data);
+  //     });
+
+  //   return () => subscribe();
+  // }, []);
+
   //BUSCA APENAS A LISTA SEM SER REALTIME
   // useEffect(() => {
   //   firestore()
