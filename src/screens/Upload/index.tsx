@@ -11,6 +11,8 @@ import { Container, Content, Progress, Transferred } from "./styles";
 
 export function Upload() {
   const [image, setImage] = useState("");
+  const [bytesTransferred, setBytesTransferred] = useState("0");
+  const [progress, setProgress] = useState("0");
 
   async function handlePickImage() {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -32,24 +34,39 @@ export function Upload() {
     const fileName = new Date().getTime();
     const reference = storage().ref(`/images/${fileName}.png`);
 
-    reference
-      .putFile(image)
-      .then(() => Alert.alert("Upload concluido!"))
-      .catch((error) => console.log(error));
+    const uploadTask = reference.putFile(image);
+
+    uploadTask.on("state_changed", (taskSnapshot) => {
+      const percent = (
+        (taskSnapshot.bytesTransferred / taskSnapshot.totalBytes) *
+        100
+      ).toFixed(0);
+      setProgress(percent);
+
+      setBytesTransferred(
+        `${taskSnapshot.bytesTransferred} transferido de ${taskSnapshot.totalBytes}`
+      );
+    });
+
+    uploadTask
+      .then(() => {
+        Alert.alert("Upload concluido!");
+      })
+      .catch((error) => console.log);
   }
 
   return (
     <Container>
-      <Header title="Lista de compras" />
+      <Header title="Upload de arquivos" />
 
       <Content>
         <Photo uri={image} onPress={handlePickImage} />
 
         <Button title="Fazer upload" onPress={handleUpload} />
 
-        <Progress>0%</Progress>
+        <Progress>{progress}%</Progress>
 
-        <Transferred>0 de 100 bytes transferido</Transferred>
+        <Transferred>{bytesTransferred}</Transferred>
       </Content>
     </Container>
   );
