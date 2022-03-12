@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { FlatList } from "react-native";
+import { Alert, FlatList } from "react-native";
 import storage from "@react-native-firebase/storage";
 
 import { Container, PhotoInfo } from "./styles";
@@ -9,8 +9,34 @@ import { File, FileProps } from "../../components/File";
 
 export function Receipts() {
   const [photos, setPhotos] = useState<FileProps[]>([]);
+  const [photoSelected, setPhotoSelected] = useState("");
+  const [photoInfo, setPhotoInfo] = useState("");
 
-  useEffect(() => {
+  async function handleShowImage(path: string) {
+    const urlImage = await storage().ref(path).getDownloadURL();
+    setPhotoSelected(urlImage);
+
+    const info = await storage().ref(path).getMetadata();
+    setPhotoInfo(`Upload realizado em ${info.timeCreated}`);
+  }
+
+  async function handleDeleteImage(path: string) {
+    await storage()
+      .ref(path)
+      .delete()
+      .then(() => {
+        Alert.alert("Imagem deletada com sucesso!");
+        setPhotoSelected("");
+        setPhotoInfo("");
+
+        fatchImages();
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  }
+
+  async function fatchImages() {
     storage()
       .ref("images")
       .list()
@@ -26,21 +52,29 @@ export function Receipts() {
 
         setPhotos(files);
       });
+  }
+
+  useEffect(() => {
+    fatchImages();
   }, []);
 
   return (
     <Container>
       <Header title="Comprovantes" />
 
-      <Photo uri="" />
+      <Photo uri={photoSelected} />
 
-      <PhotoInfo>Informações da foto</PhotoInfo>
+      <PhotoInfo>{photoInfo}</PhotoInfo>
 
       <FlatList
         data={photos}
         keyExtractor={(item) => item.name}
         renderItem={({ item }) => (
-          <File data={item} onShow={() => {}} onDelete={() => {}} />
+          <File
+            data={item}
+            onShow={() => handleShowImage(item.path)}
+            onDelete={() => handleDeleteImage(item.path)}
+          />
         )}
         contentContainerStyle={{ paddingBottom: 100 }}
         showsVerticalScrollIndicator={false}
