@@ -23,6 +23,17 @@ export function SignIn() {
       });
   }
 
+  function handleForgotPassword() {
+    auth()
+      .sendPasswordResetEmail(email)
+      .then(() =>
+        Alert.alert(
+          "Enviamos um link no seu e-mail para você redefinir sua senha."
+        )
+      )
+      .catch((error) => console.log(error));
+  }
+
   function handleSignInWithEmailAndPassword() {
     auth()
       .signInWithEmailAndPassword(email, password)
@@ -34,7 +45,7 @@ export function SignIn() {
 
         if (
           error.code === "auth/user-not-found" ||
-          error.code === "auth/wrong-passowrd"
+          error.code === "auth/wrong-password"
         ) {
           Alert.alert("Usuário não encontrado. E-mail e/ou senha inválida!");
         }
@@ -57,7 +68,7 @@ export function SignIn() {
       <Button title="Entrar" onPress={handleSignInWithEmailAndPassword} />
 
       <Account>
-        <ButtonText title="Recuperar senha" onPress={() => {}} />
+        <ButtonText title="Recuperar senha" onPress={handleForgotPassword} />
         <ButtonText
           title="Criar minha conta"
           onPress={handleCreateUserAccount}
